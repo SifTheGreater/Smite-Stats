@@ -1,0 +1,41 @@
+#import numpy as np
+#import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+URL = 'https://smite.gamepedia.com/Smite_Wiki'
+page = requests.get(URL)
+
+soup = BeautifulSoup(page.content, 'html.parser')
+
+broth = soup.find(class_="fpbox smite-window")
+results = soup.find_all('div', {'style' : 'display: inline-block;padding:1px;padding-right:5px'})
+
+gods = list()
+for x in results:
+    gods.append(x.text)
+
+for index, x in enumerate(gods):
+    gods[index] = x.replace(" ", "_")
+    if "'" in x:
+        gods[index] = x.replace("'", "%27")
+
+#for x in gods:
+#URL = 'https://smite.gamepedia.com/' + x
+URL =  'https://smite.gamepedia.com/Achilles'
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
+
+broth = soup.find(class_="infobox")
+results = soup.find_all('td')
+results = results[:-231]
+del results[0]
+
+stats = list()
+print(len(results))
+for x in results:
+    stats.append(x.text)
+
+for index, x in enumerate(stats):
+    stats[index] = x[:-1]
+print(stats)
