@@ -1,7 +1,12 @@
-#import numpy as np
-#import pandas as pd
+import numpy as np
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+
+structure = {'Title' : [], 'Pantheon' : [], 'Type' : [], 'Class' : [], 'Pros' : [], 'Difficulty' : [], 'Release Date' : [], 'Favor' : [], 'Gems' : [], 'Voicelines' : [], "Voice Actor" : [] , "Health" : [] , "Health PL" : [] , "Mana" : [] , "Mana PL" : [] , "Speed" : [] , "Speed PL" : [] , "Range" : [] , "Range PL" : [] , "Attack Apeed" : [] , "Attack Speed PL" : [] , "Basic Attack Damage" : [] , "Basic Attack Damage PL" : [], "Basic Attack Scaling" : [], "Basic Attack Progression" : [], "Pysical Prot" : [], "Pysical Prot PL" : [], "Magical Prot" : [], "Magical Prot PL" : [], "HP5" : [], "HP5 PL" : [], "MP5" : [], "MP5 PL" : []}
+df = pd.DataFrame(data = structure)
+
+print(df)
 
 URL = 'https://smite.gamepedia.com/Smite_Wiki'
 page = requests.get(URL)
@@ -20,22 +25,58 @@ for index, x in enumerate(gods):
     if "'" in x:
         gods[index] = x.replace("'", "%27")
 
-#for x in gods:
-#URL = 'https://smite.gamepedia.com/' + x
-URL =  'https://smite.gamepedia.com/Achilles'
-page = requests.get(URL)
-soup = BeautifulSoup(page.content, 'html.parser')
+for x in gods:
+    URL = 'https://smite.gamepedia.com/' + x
+    #URL =  'https://smite.gamepedia.com/Agni'
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, 'html.parser')
 
-broth = soup.find(class_="infobox")
-results = soup.find_all('td')
-results = results[:-231]
-del results[0]
+    broth = soup.find(class_="infobox")
+    results = soup.find_all('td')
+    results = results[0:23]
+    del results[0]
 
-stats = list()
-print(len(results))
-for x in results:
-    stats.append(x.text)
+    stats = list()
+    print(len(results))
+    for x in results:
+        stats.append(x.text)
 
-for index, x in enumerate(stats):
-    stats[index] = x[:-1]
-print(stats)
+    for index, x in enumerate(stats):
+        stats[index] = x[:-1]
+
+    temp = list()
+    for index, x in enumerate(stats):
+        if (index > 10) and not(index == 16 or index == 17):
+            a = x.split()
+            for x in a:
+                temp.append(x)
+        if index == 16:
+            b = x.split("+")
+            c = x.split()
+            d = c[1]+c[2]
+            d = d[:-1]
+            temp.append(c[0])
+            temp.append(d)
+            temp.append(b[-1])
+        if index == 17:
+            temp.append(x)
+
+    for index, a in enumerate(temp):
+        a = a.replace("+", "")
+        if "(" in a:
+            a = a[:-1]
+            temp[index] = a[1:]
+
+
+    stats = stats[:-11]
+
+    stats = stats + temp
+    #print(len(stats))
+    #print(stats)
+
+    insert = pd.Series(data = stats, index = df.columns, name = len(df) + 1)
+    df = df.append(insert)
+
+print(df)
+
+df.to_csv('God_Stats.csv')
